@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let timerInterval;
     let endTime;
     let isRunning = false;
+    let autoRestart = false;
     let audioContext = null;
 
     // 生成3-5分钟之间的随机时间（毫秒）
@@ -112,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 重置计时器状态
     clearInterval(timerInterval);
     isRunning = true;
+    autoRestart = true;
     startBtn.disabled = true;
     resetBtn.disabled = false;
     statusMessage.textContent = '计时器运行中...';
@@ -142,10 +144,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (remainingTime <= 0) {
             clearInterval(timerInterval);
             timerDisplay.textContent = '00:00';
-            statusMessage.textContent = '时间到！';
             isRunning = false;
             playNotificationSound();
-            startBtn.disabled = false;
+            
+            if (autoRestart) {
+                statusMessage.textContent = '10秒后自动开始下一次计时...';
+                setTimeout(() => {
+                    // 停止音乐播放
+                    const audioElement = document.getElementById('notification-sound');
+                    if (audioElement) {
+                        audioElement.pause();
+                        audioElement.currentTime = 0;
+                    }
+                    startTimer();
+                }, 10000);
+            } else {
+                statusMessage.textContent = '时间到！';
+                startBtn.disabled = false;
+            }
             return;
         }
 
@@ -157,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timerDisplay.textContent = '--:--';
         statusMessage.textContent = '点击开始按钮开始计时';
         isRunning = false;
+        autoRestart = false;
         startBtn.disabled = false;
         resetBtn.disabled = true;
         
